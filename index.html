@@ -206,6 +206,9 @@
                     <div id="trip-hud-badge" class="hidden pixel-font text-[8px] text-fuchsia-200 bg-fuchsia-950/95 border border-fuchsia-400 px-1.5 py-0.5 rounded animate-pulse">
                         🌈 ПЕРВЫЙ ТРИП: <span id="trip-timer-hud">4.0</span>с
                     </div>
+                    <div id="umat-hud-badge" class="hidden pixel-font text-[8px] text-amber-200 bg-orange-950/95 border border-orange-400 px-1.5 py-0.5 rounded animate-pulse">
+                        🍾 УМАТ (+20% БЕГ / МАГНИТ 🌿): <span id="umat-timer-hud">4.0</span>с
+                    </div>
                     <div id="kfc-hud-badge" class="hidden pixel-font text-[8px] text-red-200 bg-red-950/90 border border-red-400 px-1.5 py-0.5 rounded">
                         🪣 ШЛЕМ KFC: <span id="kfc-status-hud">ГОТОВ</span>
                     </div>
@@ -226,6 +229,9 @@
                     </div>
                     <div id="chubby-hud-badge" class="hidden pixel-font text-[8px] text-lime-300 bg-lime-950/90 border border-lime-500 px-1.5 py-0.5 rounded animate-pulse">
                         🏃 ТОЛСТЫЙ МАЛОЙ! НЕ СТОЙ!
+                    </div>
+                    <div id="kostya-hud-badge" class="hidden pixel-font text-[8px] text-cyan-200 bg-cyan-950/90 border border-cyan-400 px-1.5 py-0.5 rounded animate-pulse">
+                        😁💦 КОСТЯ ПЛЮЁТСЯ ИЗ ОКНА!
                     </div>
                 </div>
 
@@ -820,6 +826,8 @@
             honeyTeaUsed: false,
             tripTimer: 0,
             tripActiveTimer: 0,
+            umatCooldown: 0,
+            umatActiveTimer: 0,
             trail: []
         };
 
@@ -834,7 +842,7 @@
         };
 
         // ============================================================================
-        // ROGUELIKE UPGRADE SYSTEM & 8 STYLIZED CARDS
+        // ROGUELIKE UPGRADE SYSTEM & 12 STYLIZED CARDS
         // ============================================================================
         const roguelikeState = {
             leaves: 0,
@@ -844,11 +852,15 @@
                 found_ashka: 0,
                 metro_hop: 0,
                 avito_hoodie: 0,
+                drift_secret: 0,
+                devil_grip: 0,
                 fifth_grade: 0,
                 kfc_helmet: 0,
                 petya_bounce: 0,
+                masochist: 0,
                 honey_tea: 0,
-                first_trip: 0
+                first_trip: 0,
+                umat: 0
             }
         };
 
@@ -927,6 +939,26 @@
                 quote: '«Мамой клянусь, оригинал, бирка просто отпала.»'
             },
             {
+                id: 'drift_secret',
+                title: 'СЕКРЕТ ДРИФТА',
+                rarity: 'common',
+                maxStacks: 5,
+                desc: 'Порванные грязные беговые кроссовки а-ля Изики. Эти кроссовки когда-то носил великий мастер дрифта Веремеев.',
+                statIcon: '👟',
+                statText: '+8% к скорости передвижения (макс. 40%)',
+                quote: '«Боком по мокрому асфальту — школа Веремеева!»'
+            },
+            {
+                id: 'devil_grip',
+                title: 'ДЬЯВОЛЬСКИЙ ЗАХВАТ',
+                rarity: 'common',
+                maxStacks: 5,
+                desc: 'Толстый парень в очках с неровной стрижкой намертво зажимает в захвате усатого парня с большим носом. Притягивает ништяки.',
+                statIcon: '🧲',
+                statText: '+12% радиус притяжения бонусов (макс. 60%)',
+                quote: '«Из такого захвата даже водка не выскользнет!»'
+            },
+            {
                 id: 'fifth_grade',
                 title: 'ПЯТЫЙ КЛАСС',
                 rarity: 'rare',
@@ -939,11 +971,11 @@
             {
                 id: 'kfc_helmet',
                 title: 'ШЛЕМ KFC',
-                rarity: 'rare',
+                rarity: 'epic',
                 maxStacks: 1,
-                desc: 'Баскет из-под крылышек на голове. Раз в 22 секунды полностью поглощает 1 любой удар врага или падающего хлама.',
+                desc: 'Баскет из-под крылышек на голове. Раз в 40 секунд полностью поглощает 1 любой удар врага или падающего хлама.',
                 statIcon: '🪣',
-                statText: 'Блок 1 удара (КД: 22 сек.)',
+                statText: 'Блок 1 удара (КД: 40 сек.)',
                 quote: '«Острые крылышки съел, а броня осталась.»'
             },
             {
@@ -955,6 +987,16 @@
                 statIcon: '👟',
                 statText: 'Двойной прыжок в воздухе',
                 quote: '«Главное — вовремя поджать клеши в полёте.»'
+            },
+            {
+                id: 'masochist',
+                title: 'МАЗОХИСТ',
+                rarity: 'epic',
+                maxStacks: 1,
+                desc: 'Боль только разгоняет кровь по жилам. За каждый пустой слот сердечка твоя скорость передвижения увеличивается на 10%.',
+                statIcon: '🩸',
+                statText: '+10% скорости за каждое пустое ❤️',
+                quote: '«Чем хуже дела во дворе, тем быстрее ноги.»'
             },
             {
                 id: 'honey_tea',
@@ -975,6 +1017,16 @@
                 statIcon: '🌈',
                 statText: 'Весь хлам = бонусы (4с каждые 45с)',
                 quote: '«Небо над панелькой вдруг заиграло всеми цветами.»'
+            },
+            {
+                id: 'umat',
+                title: 'УМАТ',
+                rarity: 'legendary',
+                maxStacks: 1,
+                desc: 'Бухой старый мужик в оранжевой куртке с огромной чёрной бутылкой джина. При получении урона ускоряет бег и магнитит марихуану!',
+                statIcon: '🍾',
+                statText: 'Урон = +20% бег и +100% магнит 🌿 на 4с (КД 8с)',
+                quote: '«Щас глотну из горла — и полетим собирать урожай!»'
             }
         ];
 
@@ -989,6 +1041,14 @@
 
         function getHitboxScale() {
             return roguelikeState.counts.fifth_grade > 0 ? 0.8 : 1.0;
+        }
+
+        function getPositivePickupMult(itemType) {
+            let mult = 1.0 + Math.min(0.60, (roguelikeState.counts.devil_grip || 0) * 0.12);
+            if (itemType === 'cannabis_leaf' && player.umatActiveTimer > 0) {
+                mult += 1.0; // +100% radius for marijuana during Umat!
+            }
+            return mult;
         }
 
         // Draw rich, high-detail atmospheric pixel-art illustration on each card's canvas
@@ -1388,6 +1448,205 @@
                 px(118, 19, 10, 18, '#e0f2fe');
                 px(119, 24, 8, 7, '#fbbf24');
                 px(119, 26, 8, 2, '#dc2626');
+
+            } else if (cardId === 'drift_secret') {
+                // Wet asphalt with tire skidmarks & beat-up dirty Yeezy Boost 350 sneakers of Drift Master Veremeev
+                px(0, 56, cw, 32, '#0f172a');
+                px(0, 55, cw, 2, '#334155');
+                // Drift tire skidmarks & smoke on asphalt
+                px(10, 66, 140, 4, '#020617');
+                px(18, 74, 124, 3, '#020617');
+                px(16, 46, 26, 12, 'rgba(148, 163, 184, 0.25)');
+                px(118, 42, 28, 14, 'rgba(148, 163, 184, 0.22)');
+
+                // Back sneaker (slightly behind)
+                px(28, 30, 56, 28, '#090d16');
+                px(30, 32, 52, 18, '#78716c'); // Primeknit grey-tan upper
+                px(26, 48, 60, 10, '#d6d3d1'); // Ribbed Yeezy Boost midsole
+
+                // Foreground iconic torn & muddy Yeezy Boost 350 sneaker
+                px(48, 26, 84, 42, '#090d16'); // Crisp outline
+                // Ribbed Boost chunky sole (wider at heel, curved toe)
+                px(44, 54, 90, 13, '#090d16');
+                px(46, 55, 86, 11, '#e7e5e4');
+                for (let rx = 50; rx <= 126; rx += 5) {
+                    px(rx, 55, 2, 10, '#a8a29e'); // Yeezy ribbed sole ridges
+                }
+                // Woven Primeknit upper
+                px(52, 28, 42, 27, '#a8a29e');
+                px(92, 36, 36, 19, '#a8a29e');
+                // Signature side SPLY-350 stripe
+                px(54, 41, 70, 5, '#ea580c');
+                px(62, 42, 44, 3, '#fed7aa');
+                // Heel pull-tab with red stitch
+                px(43, 29, 9, 8, '#44403c');
+                px(45, 32, 5, 2, '#ef4444');
+                // Ripped holes on toebox & dark mud splatters from drifting
+                px(110, 40, 9, 6, '#090d16'); // Torn hole showing sock
+                px(112, 42, 5, 3, '#cbd5e1');
+                px(76, 31, 6, 4, '#090d16');  // Tear near laces
+                px(60, 48, 14, 6, '#451a03'); // Brown mud splatter
+                px(86, 46, 18, 7, '#451a03');
+                px(48, 58, 22, 6, '#5c280b'); // Mud on Boost sole
+
+            } else if (cardId === 'devil_grip') {
+                // Chubby guy in glasses with uneven short hair locking a big-nosed mustachioed guy in a tight headlock
+                px(0, 68, cw, 20, '#090d16');
+                // Red-purple grapple aura
+                const gGlow = c.createRadialGradient(80, 46, 6, 80, 46, 48);
+                gGlow.addColorStop(0, 'rgba(220, 38, 38, 0.45)');
+                gGlow.addColorStop(1, 'rgba(220, 38, 38, 0)');
+                c.fillStyle = gGlow;
+                c.fillRect(20, 4, 120, 76);
+
+                // Left Character: Chubby guy in glasses with uneven short choppy hair
+                px(24, 38, 56, 44, '#090d16'); // Wide chubby torso outline
+                px(26, 40, 52, 40, '#1e293b'); // Dark sweater
+                px(30, 12, 36, 29, '#090d16'); // Big round head outline
+                px(32, 14, 32, 26, '#fde68a'); // Chubby face
+                px(30, 26, 36, 12, '#f5cba7'); // Full chubby cheeks & double chin
+                // Short uneven jagged bang haircut
+                px(30, 10, 36, 6, '#271712');
+                px(32, 16, 5, 3, '#271712');
+                px(41, 15, 7, 4, '#271712');
+                px(53, 16, 4, 2, '#271712');
+                px(59, 15, 5, 4, '#271712');
+                // Thick glasses with bright lens glint
+                px(35, 21, 11, 8, '#090d16');
+                px(49, 21, 11, 8, '#090d16');
+                px(46, 23, 3, 2, '#090d16');
+                px(37, 23, 7, 4, '#bae6fd');
+                px(51, 23, 7, 4, '#bae6fd');
+                px(39, 24, 2, 2, '#ffffff');
+                px(53, 24, 2, 2, '#ffffff');
+                // Fierce grin
+                px(41, 33, 14, 3, '#090d16');
+                px(43, 34, 10, 1, '#ffffff');
+
+                // Right Character (Squeezed in headlock): Guy with prominent big nose & thick mustache
+                px(76, 44, 48, 38, '#090d16');
+                px(78, 46, 44, 34, '#334155');
+                px(78, 22, 34, 26, '#090d16'); // Squeezed tilted head
+                px(80, 24, 30, 22, '#fca5a5'); // Flushed red face from tight squeeze!
+                px(78, 19, 34, 6, '#3e1f0d');  // Dark hair
+                // Strained bulging eyes
+                px(84, 28, 6, 5, '#ffffff');
+                px(97, 28, 6, 5, '#ffffff');
+                px(86, 30, 2, 2, '#090d16');
+                px(99, 30, 2, 2, '#090d16');
+                // Prominent BIG NOSE sticking out
+                px(87, 31, 11, 8, '#ef4444');
+                px(89, 32, 8, 6, '#fca5a5');
+                // Thick bushy MUSTACHE under the big nose
+                px(82, 38, 20, 5, '#1c1917');
+                px(80, 40, 24, 3, '#292524');
+
+                // Chubby guy's thick arm wrapping tightly around the victim's neck in a headlock!
+                px(58, 34, 58, 12, '#090d16');
+                px(60, 36, 52, 8, '#1e293b');
+                px(74, 42, 38, 10, '#fde68a'); // Forearm squeezing across chest/neck
+                // Sweat drops flying from the squeeze
+                px(116, 20, 3, 5, '#38bdf8');
+                px(122, 28, 4, 3, '#38bdf8');
+
+            } else if (cardId === 'masochist') {
+                // Dark crimson atmospheric background with a scarred/slashed forearm & glowing blood adrenaline
+                const mGlow = c.createRadialGradient(80, 44, 4, 80, 44, 54);
+                mGlow.addColorStop(0, 'rgba(225, 29, 72, 0.52)');
+                mGlow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                c.fillStyle = mGlow;
+                c.fillRect(10, 0, 140, 88);
+
+                // Diagonal pale forearm reaching across the frame
+                px(18, 52, 34, 24, '#090d16'); // Rolled-up black hoodie cuff
+                px(20, 54, 30, 20, '#1e293b');
+                // Forearm & clenched hand
+                px(48, 30, 86, 28, '#090d16');
+                px(50, 32, 82, 24, '#e2d5c4');
+                px(50, 32, 82, 6, '#f5ebe0');  // Upper skin highlight
+                px(50, 50, 82, 6, '#cbb8a3');  // Lower forearm shadow
+                // Clenched fingers on the right
+                px(124, 28, 16, 28, '#090d16');
+                px(126, 30, 12, 24, '#d5c3ae');
+                px(126, 35, 12, 2, '#090d16');
+                px(126, 41, 12, 2, '#090d16');
+                px(126, 47, 12, 2, '#090d16');
+
+                // Glowing crimson cut marks / scars across the forearm with speed sparks
+                const cuts = [
+                    { x: 58, y: 34, h: 18 },
+                    { x: 72, y: 33, h: 20 },
+                    { x: 86, y: 35, h: 17 },
+                    { x: 100, y: 33, h: 19 },
+                    { x: 113, y: 36, h: 15 }
+                ];
+                for (const ct of cuts) {
+                    px(ct.x - 1, ct.y, 4, ct.h, '#881337');
+                    px(ct.x, ct.y + 1, 2, ct.h - 2, '#f43f5e');
+                    px(ct.x, ct.y + ct.h, 2, 4, '#e11d48');
+                }
+                // Empty heart slots turning into glowing red speed bolts above
+                px(54, 12, 12, 10, '#090d16');
+                px(56, 14, 8, 6, '#be123c');
+                px(76, 10, 12, 10, '#090d16');
+                px(78, 12, 8, 6, '#f43f5e');
+                px(98, 12, 12, 10, '#090d16');
+                px(100, 14, 8, 6, '#fb7185');
+
+            } else if (cardId === 'umat') {
+                // Drunk old man in a bright orange jacket clutching a huge black bottle of gin
+                px(0, 68, cw, 20, '#090d16');
+                const uGlow = c.createRadialGradient(80, 44, 6, 80, 44, 52);
+                uGlow.addColorStop(0, 'rgba(249, 115, 22, 0.5)');
+                uGlow.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                c.fillStyle = uGlow;
+                c.fillRect(16, 4, 128, 78);
+
+                // Puffy bright orange jacket torso & shoulders
+                px(26, 38, 72, 46, '#090d16');
+                px(28, 40, 68, 42, '#ea580c');
+                px(30, 42, 64, 38, '#f97316');
+                px(34, 44, 22, 32, '#fb923c'); // Puffer jacket highlight
+                px(28, 54, 68, 2, '#9a3412');  // Puffer quilt seams
+                px(28, 68, 68, 2, '#9a3412');
+                px(58, 40, 4, 42, '#1e293b');  // Center zipper
+
+                // Old weathered face with gray stubble, red drunken nose & wild gray hair
+                px(42, 14, 38, 26, '#090d16');
+                px(44, 16, 34, 23, '#eab676');
+                px(44, 29, 34, 10, '#94a3b8'); // Rough gray beard stubble
+                px(46, 31, 30, 7, '#cbd5e1');
+                // Messy gray hair tufts sticking out on sides
+                px(38, 14, 10, 10, '#cbd5e1');
+                px(74, 14, 10, 10, '#cbd5e1');
+                px(44, 11, 34, 6, '#94a3b8');
+                // Half-lidded bloodshot drunken eyes & big red nose
+                px(49, 22, 7, 4, '#fecdd3');
+                px(65, 22, 7, 4, '#fecdd3');
+                px(51, 23, 3, 2, '#090d16');
+                px(67, 23, 3, 2, '#090d16');
+                px(48, 21, 9, 2, '#b47b48');   // Droopy eyelids
+                px(64, 21, 9, 2, '#b47b48');
+                px(56, 24, 9, 7, '#ef4444');   // Big red tipsy nose
+                px(58, 25, 4, 3, '#fca5a5');
+                px(53, 34, 14, 3, '#450a0a');  // Crooked tipsy grin
+
+                // HUGE BLACK BOTTLE OF GIN held in his hand on the right
+                px(102, 8, 12, 12, '#090d16'); // Bottle neck
+                px(104, 6, 8, 4, '#fbbf24');   // Gold cap
+                px(104, 10, 8, 10, '#1e293b');
+                px(92, 20, 32, 58, '#020617'); // Huge black gin bottle body
+                px(94, 22, 28, 54, '#0f172a');
+                px(96, 24, 6, 48, '#334155');  // Glossy black glass highlight
+                // Classic white/gold "GIN" label on the giant bottle
+                px(97, 38, 22, 20, '#f8fafc');
+                px(99, 40, 18, 16, '#090d16');
+                c.fillStyle = '#fbbf24';
+                c.font = 'bold 7px monospace';
+                c.textAlign = 'center';
+                c.fillText('GIN', 108, 50);
+                // Old man's hand gripping the bottle
+                px(88, 48, 14, 12, '#eab676');
             }
 
             // Crisp ornate double inner border with corner rivets (matching reference cards)
@@ -1532,11 +1791,15 @@
             if (roguelikeState.counts.found_ashka > 0) items.push(`🍀+${roguelikeState.counts.found_ashka * 5}%`);
             if (roguelikeState.counts.metro_hop > 0) items.push(`💨+${roguelikeState.counts.metro_hop * 5}%`);
             if (roguelikeState.counts.avito_hoodie > 0) items.push(`🧥+${roguelikeState.counts.avito_hoodie}❤️`);
+            if (roguelikeState.counts.drift_secret > 0) items.push(`👟+${roguelikeState.counts.drift_secret * 8}%`);
+            if (roguelikeState.counts.devil_grip > 0) items.push(`🧲+${roguelikeState.counts.devil_grip * 12}%`);
             if (roguelikeState.counts.fifth_grade > 0) items.push(`📏-20%`);
             if (roguelikeState.counts.kfc_helmet > 0) items.push(`🪣KFC`);
             if (roguelikeState.counts.petya_bounce > 0) items.push(`👟2xПрыжок`);
+            if (roguelikeState.counts.masochist > 0) items.push(`🩸Мазохист`);
             if (roguelikeState.counts.honey_tea > 0) items.push(player.honeyTeaUsed ? `🍯(исп.)` : `🍯Чай`);
             if (roguelikeState.counts.first_trip > 0) items.push(`🌈Трип`);
+            if (roguelikeState.counts.umat > 0) items.push(`🍾Умат`);
 
             if (items.length > 0) {
                 row.classList.remove('hidden');
@@ -1688,6 +1951,21 @@
             stoleSkin: null
         };
 
+        // Enemy 5: Kostya in Random Window (Messy blonde hair with bangs, huge grin, spits rapidly for 3-5s)
+        const kostyaEvent = {
+            active: false,
+            cooldown: 18.5,
+            winX: 112,
+            winY: 96,
+            emerge: 0,
+            phase: 'smile_in', // 'smile_in' (1s), 'spitting' (3-5s), 'smile_out' (1s)
+            timer: 1.0,
+            spitTimer: 0.18,
+            targetGroundX: 127,
+            quote: '',
+            quoteTimer: 0
+        };
+
         // Helper: check if any enemy Ultimate is currently active
         function isAnyUltActive() {
             return (wormEvent.active && wormEvent.isUlt) ||
@@ -1699,6 +1977,7 @@
         function getActiveSpeechOwner() {
             if (furryEvent.active && furryEvent.phase === 'licking' && furryEvent.quote) return 'furry';
             if (gymEvent.active && gymEvent.quoteTimer > 0 && gymEvent.quote) return 'gym';
+            if (kostyaEvent.active && kostyaEvent.quoteTimer > 0 && kostyaEvent.quote) return 'kostya';
             if (furryEvent.active && furryEvent.quoteTimer > 0 && furryEvent.quote) return 'furry';
             if (chubbyEvent.active && chubbyEvent.quoteTimer > 0 && chubbyEvent.quote) return 'chubby';
             if (player.replyBubbleTimer > 0 && player.replyBubbleText) return 'player';
@@ -1707,15 +1986,20 @@
             return 'babushka';
         }
 
-        // Ultimate System (Every 5000 points, Siren spoiler 500 points prior)
+        // Ultimate System (Every 5000 points, Siren spoiler 500 points prior; Dual Ultimates after 150,000!)
         const ultState = {
             nextThreshold: 5000,
             warningShown: false,
             warningDisplayTimer: 0,
-            queuedEnemy: 'worm' // 'worm', 'furry', 'gym'
+            queuedEnemies: ['worm'] // 1 enemy below 150k, 2 simultaneous enemies at 150k+
         };
 
         function getTempoMultiplier() {
+            if (score >= 300000) return 2.0;
+            if (score >= 250000) return 1.9;
+            if (score >= 150000) return 1.8;
+            if (score >= 80000) return 1.7;
+            if (score >= 50000) return 1.6;
             if (score >= 30000) return 1.5;
             if (score >= 20000) return 1.3;
             if (score >= 10000) return 1.2;
@@ -2294,11 +2578,13 @@
                     fillRectPixel(wx + 18, wy + 3, 8, 22, '#181526');
                 }
 
+                // STRICT CLIPPING INSIDE WINDOW GLASS (30x32)
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(wx, wy, ww, wh);
                 ctx.clip();
 
+                // A) Curious or Angry Neighbor Peeking from Window
                 if (windowPeeker.active && windowPeeker.winX === wx && windowPeeker.winY === wy) {
                     const py = wy + 11 + Math.round(windowPeeker.offsetY);
                     fillRectPixel(wx + 7, py + 10, 16, 14, windowPeeker.shirtColor);
@@ -2318,6 +2604,7 @@
                     }
                 }
 
+                // B) Bald Dark-Skinned Athletic Gym Bro in Fixed Window (x:225, y:96)
                 if (w.isGymWindow && gymEvent.active) {
                     const shakeX = gymEvent.isUlt ? Math.round((Math.random() - 0.5) * 3) : 0;
                     const gy = wy + 5 + Math.round((1 - gymEvent.emerge) * 29);
@@ -2331,31 +2618,83 @@
                     fillRectPixel(gx + 2, gy + 9, 26, 16, '#8d5524');
                     fillRectPixel(gx + 3, gy + 10, 6, 8, '#b06c33');
                     fillRectPixel(gx + 21, gy + 10, 6, 8, '#b06c33');
-
                     fillRectPixel(gx + 8, gy + 11, 14, 16, '#090d16');
                     fillRectPixel(gx + 10, gy + 11, 10, 4, '#8d5524');
                     fillRectPixel(gx + 14, gy + 12, 2, 4, '#593010');
 
-                    fillRectPixel(gx + 9, gy - 1, 12, 12, '#78441a');
-                    fillRectPixel(gx + 10, gy, 10, 10, '#8d5524');
-                    fillRectPixel(gx + 11, gy + 1, 4, 2, '#c68642');
+                    fillRectPixel(gx + 9, gy - 1, 12, 11, '#8d5524');
+                    fillRectPixel(gx + 10, gy - 2, 10, 2, '#b06c33');
+                    fillRectPixel(gx + 11, gy - 1, 3, 2, '#eab676');
+                    fillRectPixel(gx + 10, gy + 2, 4, 1, '#090d16');
+                    fillRectPixel(gx + 16, gy + 2, 4, 1, '#090d16');
+                    fillRectPixel(gx + 11, gy + 3, 3, 2, gymEvent.isUlt ? '#ef4444' : '#ffffff');
+                    fillRectPixel(gx + 16, gy + 3, 3, 2, gymEvent.isUlt ? '#ef4444' : '#ffffff');
+                    fillRectPixel(gx + 12, gy + 3, 1, 2, '#090d16');
+                    fillRectPixel(gx + 17, gy + 3, 1, 2, '#090d16');
+                    fillRectPixel(gx + 12, gy + 6, 6, 3, '#450a0a');
+                    fillRectPixel(gx + 13, gy + 6, 4, 1, '#ffffff');
 
-                    fillRectPixel(gx + 10, gy + 3, 4, 1, '#271204');
-                    fillRectPixel(gx + 16, gy + 3, 4, 1, '#271204');
-                    fillRectPixel(gx + 11, gy + 4, 2, 2, gymEvent.isUlt ? '#ef4444' : '#ffffff');
-                    fillRectPixel(gx + 17, gy + 4, 2, 2, gymEvent.isUlt ? '#ef4444' : '#ffffff');
-                    fillRectPixel(gx + 12, gy + 7, 6, 3, '#450a0a');
-                    fillRectPixel(gx + 13, gy + 7, 4, 1, '#ffffff');
-
+                    fillRectPixel(gx + 2, gy + 22, 7, 5, '#8d5524');
                     if (gymEvent.throwTimer < 0.25) {
                         fillRectPixel(gx + 22, gy + 2, 6, 9, '#8d5524');
                         fillRectPixel(gx + 23, gy, 5, 4, '#475569');
                     }
                 }
 
+                // Kostya in Random Non-Gym Window (Messy blonde bangs, pale face, huge wide grin)
+                if (!w.isGymWindow && kostyaEvent.active && kostyaEvent.winX === wx && kostyaEvent.winY === wy) {
+                    const ky = wy + 4 + Math.round((1 - kostyaEvent.emerge) * 30);
+                    const kx = wx;
+
+                    // Black t-shirt shoulders & neck
+                    fillRectPixel(kx + 4, ky + 16, 22, 14, '#090d16');
+                    fillRectPixel(kx + 6, ky + 17, 18, 12, '#18181b');
+                    fillRectPixel(kx + 11, ky + 14, 8, 4, '#f5d0b5');
+
+                    // Pale oval face & chin
+                    fillRectPixel(kx + 7, ky + 3, 16, 13, '#f5d0b5');
+                    fillRectPixel(kx + 8, ky + 4, 14, 11, '#fae3d2');
+
+                    // Longer messy blonde locks framing left & right sides down to shoulders
+                    fillRectPixel(kx + 4, ky + 2, 4, 16, '#c29b61');
+                    fillRectPixel(kx + 5, ky + 4, 3, 13, '#dec08a');
+                    fillRectPixel(kx + 22, ky + 2, 4, 16, '#c29b61');
+                    fillRectPixel(kx + 22, ky + 4, 3, 13, '#dec08a');
+
+                    // Thick layered messy blonde fringe/bangs covering forehead down to eyebrows
+                    fillRectPixel(kx + 5, ky - 2, 20, 7, '#c29b61');
+                    fillRectPixel(kx + 6, ky - 1, 18, 6, '#e3c58e');
+                    fillRectPixel(kx + 8, ky, 5, 6, '#f3dca6');
+                    fillRectPixel(kx + 15, ky, 6, 6, '#f3dca6');
+                    fillRectPixel(kx + 7, ky + 4, 3, 3, '#d4b275');
+                    fillRectPixel(kx + 12, ky + 4, 4, 3, '#e3c58e');
+                    fillRectPixel(kx + 18, ky + 4, 3, 3, '#d4b275');
+
+                    // Wide-open mischievous eyes staring right into the camera
+                    fillRectPixel(kx + 9, ky + 6, 4, 3, '#ffffff');
+                    fillRectPixel(kx + 17, ky + 6, 4, 3, '#ffffff');
+                    fillRectPixel(kx + 10, ky + 7, 2, 2, '#1e293b');
+                    fillRectPixel(kx + 18, ky + 7, 2, 2, '#1e293b');
+
+                    // HUGE WIDE GRIN ("огромная лыба")
+                    if (kostyaEvent.phase === 'spitting' && Math.floor(globalTick / 3) % 2 === 0) {
+                        // Spitting mouth while keeping wide cheeky corners
+                        fillRectPixel(kx + 9, ky + 11, 12, 3, '#7f1d1d');
+                        fillRectPixel(kx + 10, ky + 11, 10, 1, '#ffffff');
+                        fillRectPixel(kx + 13, ky + 12, 4, 3, '#bae6fd');
+                    } else {
+                        // Full ear-to-ear wide toothy grin
+                        fillRectPixel(kx + 8, ky + 10, 2, 2, '#9f1239');
+                        fillRectPixel(kx + 20, ky + 10, 2, 2, '#9f1239');
+                        fillRectPixel(kx + 9, ky + 11, 12, 3, '#881337');
+                        fillRectPixel(kx + 10, ky + 11, 10, 2, '#ffffff');
+                    }
+                }
+
                 ctx.restore();
 
-                if (!w.isGymWindow || !gymEvent.active) {
+                const isKostyaWin = (!w.isGymWindow && kostyaEvent.active && kostyaEvent.winX === wx && kostyaEvent.winY === wy);
+                if ((!w.isGymWindow || !gymEvent.active) && !isKostyaWin) {
                     fillRectPixel(wx + 14, wy, 2, wh, '#272336');
                     fillRectPixel(wx, wy + 13, ww, 2, '#272336');
                 } else {
@@ -2374,6 +2713,16 @@
                     gymEvent.winY - 7,
                     gymEvent.isUlt ? '#ef4444' : '#f97316',
                     '#ffffff'
+                );
+            }
+
+            if (kostyaEvent.active && kostyaEvent.quote && getActiveSpeechOwner() === 'kostya') {
+                drawCrispArcadeBubble(
+                    kostyaEvent.quote,
+                    kostyaEvent.winX + 15,
+                    kostyaEvent.winY - 7,
+                    '#38bdf8',
+                    '#e0f2fe'
                 );
             }
 
@@ -3171,6 +3520,23 @@
                     fillRectPixel(-2, -1, 4, 2, col('#ffe4e6'));
                 }, '#fda4af');
 
+            } else if (obj.type === 'kostya_spit') {
+                // Huge foaming saliva glob from Kostya
+                const auraGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 10);
+                auraGrad.addColorStop(0, 'rgba(186, 230, 253, 0.65)');
+                auraGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                ctx.fillStyle = auraGrad;
+                ctx.fillRect(-10, -10, 20, 20);
+
+                drawPixelSpriteWithOutline((override) => {
+                    const col = (c) => override || c;
+                    fillRectPixel(-4, -5, 8, 10, col('#38bdf8'));
+                    fillRectPixel(-5, -3, 10, 6, col('#7dd3fc'));
+                    fillRectPixel(-3, -3, 6, 6, col('#e0f2fe'));
+                    fillRectPixel(-2, -2, 3, 3, col('#ffffff'));
+                    fillRectPixel(2, -6, 3, 3, col('#bae6fd'));
+                }, '#0284c7');
+
             } else if (obj.type === 'cannabis_leaf') {
                 const auraGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 13);
                 auraGrad.addColorStop(0, 'rgba(74, 222, 128, 0.65)');
@@ -3233,7 +3599,7 @@
                 const vodkaThresh = 0.005 * (1 + luck * 2.2);
                 const energyThresh = vodkaThresh + 0.05 * (1 + luck * 1.5);
                 const pizzaThresh = energyThresh + 0.15 * (1 + luck * 1.2);
-                const leafThresh = pizzaThresh + 0.10; // 10% chance for Cannabis Leaf
+                const weedThresh = pizzaThresh + 0.10;
 
                 if (roll < vodkaThresh) {
                     type = 'vodka';
@@ -3241,38 +3607,38 @@
                     type = 'lit_energy';
                 } else if (roll < pizzaThresh) {
                     type = 'heal_pizza';
-                } else if (roll < leafThresh) {
+                } else if (roll < weedThresh) {
                     type = 'cannabis_leaf';
                 } else {
-                    const trashPool = ['pills', 'pigeon', 'fl_fruit', 'bottle', 'microwave'];
-                    type = trashPool[Math.floor(Math.random() * trashPool.length)];
+                    const hazards = ['pills', 'pigeon', 'fl_fruit', 'bottle', 'microwave'];
+                    type = hazards[Math.floor(Math.random() * hazards.length)];
                 }
             }
 
-            // Anti-corner camping: if player stands near extreme left/right edge, bias spawns toward player
-            const nearCorner = (player.x < 48 || player.x > W - 48);
-            const spawnX = (nearCorner && Math.random() < 0.52)
-                ? Math.max(16, Math.min(W - 16, player.x + (Math.random() - 0.5) * 36))
-                : 18 + Math.random() * (W - 36);
+            let spawnX = 18 + Math.random() * (W - 36);
+            if ((player.x < 48 || player.x > W - 48) && Math.random() < 0.45) {
+                spawnX = Math.max(16, Math.min(W - 16, player.x + (Math.random() - 0.5) * 28));
+            }
 
             fallingObjects.push({
                 x: spawnX,
                 y: -14,
-                vx: (type === 'pigeon' || type === 'cannabis_leaf') ? (Math.random() - 0.5) * 0.65 : 0,
-                vy: type === 'cannabis_leaf' ? 1.35 + Math.random() * 0.55 : 1.55 + Math.random() * 0.95,
+                vx: 0,
+                vy: type === 'vodka' ? 1.85 : (1.95 + Math.random() * 1.15),
                 rot: 0,
-                vRot: type === 'vodka' ? 0.09 : (Math.random() - 0.5) * 0.06,
+                vRot: type === 'vodka' ? 0.08 : ((Math.random() - 0.5) * 0.1),
                 type,
                 fromGym: false
             });
         }
 
-        function startWormEvent(asUlt = false) {
-            if (asUlt) {
-                // Clear other active enemies so Ultimate is solo
-                furryEvent.active = false;
-                gymEvent.active = false;
+        function startWormEvent(asUlt = false, keepOtherUlt = false) {
+            if (asUlt && !keepOtherUlt) {
+                // Clear non-ult active enemies
+                if (!furryEvent.isUlt) furryEvent.active = false;
+                if (!gymEvent.isUlt) gymEvent.active = false;
                 chubbyEvent.active = false;
+                kostyaEvent.active = false;
                 player.pinnedByFurry = 0;
             }
             wormEvent.active = true;
@@ -3304,12 +3670,15 @@
             playSfx(asUlt ? 'violin_ult' : 'violin');
         }
 
-        function startFurryEvent(asUlt = false) {
-            if (asUlt) {
-                wormEvent.active = false;
-                wormEvent.worms = [];
-                gymEvent.active = false;
+        function startFurryEvent(asUlt = false, keepOtherUlt = false) {
+            if (asUlt && !keepOtherUlt) {
+                if (!wormEvent.isUlt) {
+                    wormEvent.active = false;
+                    wormEvent.worms = [];
+                }
+                if (!gymEvent.isUlt) gymEvent.active = false;
                 chubbyEvent.active = false;
+                kostyaEvent.active = false;
             }
             furryEvent.active = true;
             furryEvent.isUlt = asUlt;
@@ -3326,12 +3695,15 @@
             playSfx('bark');
         }
 
-        function startGymEvent(asUlt = false) {
-            if (asUlt) {
-                wormEvent.active = false;
-                wormEvent.worms = [];
-                furryEvent.active = false;
+        function startGymEvent(asUlt = false, keepOtherUlt = false) {
+            if (asUlt && !keepOtherUlt) {
+                if (!wormEvent.isUlt) {
+                    wormEvent.active = false;
+                    wormEvent.worms = [];
+                }
+                if (!furryEvent.isUlt) furryEvent.active = false;
                 chubbyEvent.active = false;
+                kostyaEvent.active = false;
                 player.pinnedByFurry = 0;
             }
             gymEvent.active = true;
@@ -3359,6 +3731,24 @@
             chubbyEvent.quoteTimer = 130;
         }
 
+        function startKostyaEvent() {
+            const candidates = WINDOW_COORDS.filter(w => !w.isGymWindow);
+            const picked = candidates[Math.floor(Math.random() * candidates.length)];
+            kostyaEvent.active = true;
+            kostyaEvent.winX = picked.x;
+            kostyaEvent.winY = picked.y;
+            kostyaEvent.emerge = 0;
+            kostyaEvent.phase = 'smile_in';
+            kostyaEvent.timer = 1.0; // 1 second staring at camera with huge grin
+            kostyaEvent.spitTimer = 0.16;
+            // Pick a single fixed trajectory toward the ground near player's current region or below window
+            const clampedPlayerX = Math.max(picked.x - 75, Math.min(picked.x + 105, player.x));
+            kostyaEvent.targetGroundX = Math.max(20, Math.min(W - 20, clampedPlayerX));
+            kostyaEvent.quote = "Хе-хе-хе! Лови верблюжью слюну! 😁💦";
+            kostyaEvent.quoteTimer = 95;
+            playSfx('jump');
+        }
+
         // ============================================================================
         // FIXED-TIMESTEP UPDATE LOGIC (100% MONITOR HZ INDEPENDENT)
         // ============================================================================
@@ -3376,10 +3766,10 @@
                 return;
             }
 
-            // 2. Check "Шлем KFC" Shield (absorbs 1 hit every 22 seconds & knocks bucket off head)
+            // 2. Check "Шлем KFC" Shield (absorbs 1 hit every 40 seconds & knocks bucket off head)
             if (roguelikeState.counts.kfc_helmet > 0 && player.kfcShieldReady) {
                 player.kfcShieldReady = false;
-                player.kfcCooldown = 22.0;
+                player.kfcCooldown = 40.0;
                 player.invulnTimer = 45;
                 flyingKfcHelmet.active = true;
                 flyingKfcHelmet.x = player.x;
@@ -3397,6 +3787,15 @@
             }
 
             player.hp -= 1;
+
+            // Trigger Legendary "УМАТ" card on taking damage (8s cooldown -> +20% speed & +100% weed magnet for 4s)
+            if (roguelikeState.counts.umat > 0 && player.umatCooldown <= 0) {
+                player.umatActiveTimer = 4.0;
+                player.umatCooldown = 8.0;
+                spawnParticles(player.x, player.y - 24, '#f97316', 16);
+                player.replyBubbleText = '🍾 УМАТ! +20% СКОРОСТЬ И МАГНИТ 🌿!';
+                player.replyBubbleTimer = 95;
+            }
 
             // 3. Check "Чай с мёдом" Legendary Second-Chance (triggers once per game when fatal or low)
             if (player.hp <= 0 && roguelikeState.counts.honey_tea > 0 && !player.honeyTeaUsed) {
@@ -3444,7 +3843,14 @@
                 ultState.warningShown = true;
                 ultState.warningDisplayTimer = 3.2;
                 const pool = ['worm', 'furry', 'gym'];
-                ultState.queuedEnemy = pool[Math.floor(Math.random() * pool.length)];
+                const first = pool[Math.floor(Math.random() * pool.length)];
+                if (ultState.nextThreshold >= 150000) {
+                    const rem = pool.filter(e => e !== first);
+                    const second = rem[Math.floor(Math.random() * rem.length)];
+                    ultState.queuedEnemies = [first, second];
+                } else {
+                    ultState.queuedEnemies = [first];
+                }
                 playSfx('siren');
                 setTimeout(() => playSfx('siren'), 520);
                 const spoilerNames = {
@@ -3452,7 +3858,8 @@
                     furry: 'ФУРРИ-ВОЛК 🐺',
                     gym: 'КАЧОК-ДОТЕР 💪'
                 };
-                document.getElementById('ult-center-spoiler').textContent = spoilerNames[ultState.queuedEnemy];
+                document.getElementById('ult-center-spoiler').textContent =
+                    ultState.queuedEnemies.map(k => spoilerNames[k]).join(' + ');
                 document.getElementById('ult-center-banner').classList.remove('hidden');
             }
 
@@ -3463,27 +3870,32 @@
                 }
             }
 
-            // Trigger Ultimate at exact 5000 score milestones
+            // Trigger Ultimate at exact 5000 score milestones (Dual Ultimates at 150,000+!)
             if (score >= ultState.nextThreshold) {
                 document.getElementById('ult-center-banner').classList.add('hidden');
                 ultState.warningDisplayTimer = 0;
-                const chosen = ultState.queuedEnemy;
+                const chosenList = ultState.queuedEnemies || ['worm'];
+                const isDual = chosenList.length > 1;
                 ultState.nextThreshold += 5000;
                 ultState.warningShown = false;
 
-                if (chosen === 'worm') {
-                    startWormEvent(true);
-                } else if (chosen === 'furry') {
-                    startFurryEvent(true);
-                } else if (chosen === 'gym') {
-                    startGymEvent(true);
-                }
+                chosenList.forEach((chosen, idx) => {
+                    const keepPrev = isDual && idx > 0;
+                    if (chosen === 'worm') {
+                        startWormEvent(true, keepPrev);
+                    } else if (chosen === 'furry') {
+                        startFurryEvent(true, keepPrev);
+                    } else if (chosen === 'gym') {
+                        startGymEvent(true, keepPrev);
+                    }
+                });
             }
 
             // Timers on player
             if (player.invulnTimer > 0) player.invulnTimer--;
             if (player.replyBubbleTimer > 0) player.replyBubbleTimer--;
             if (gymEvent.quoteTimer > 0) gymEvent.quoteTimer--;
+            if (kostyaEvent.quoteTimer > 0) kostyaEvent.quoteTimer--;
             if (furryEvent.quoteTimer > 0) furryEvent.quoteTimer--;
             if (chubbyEvent.quoteTimer > 0) chubbyEvent.quoteTimer--;
             if (player.jumpCooldown > 0) player.jumpCooldown = Math.max(0, player.jumpCooldown - dt);
@@ -3491,6 +3903,8 @@
             if (player.vodkaSlowTimer > 0) player.vodkaSlowTimer = Math.max(0, player.vodkaSlowTimer - dt);
             if (player.artifactStolenTimer > 0) player.artifactStolenTimer = Math.max(0, player.artifactStolenTimer - dt);
             if (player.pinnedByFurry > 0) player.pinnedByFurry = Math.max(0, player.pinnedByFurry - dt);
+            if (player.umatCooldown > 0) player.umatCooldown = Math.max(0, player.umatCooldown - dt);
+            if (player.umatActiveTimer > 0) player.umatActiveTimer = Math.max(0, player.umatActiveTimer - dt);
 
             // Update flying KFC helmet physics when knocked off
             if (flyingKfcHelmet.active) {
@@ -3527,26 +3941,32 @@
                         player.tripTimer = 45.0;
                         playSfx('heal');
                         player.replyBubbleText = '🌈 ПЕРВЫЙ ТРИП! ВЕСЬ ХЛАМ = БОНУСЫ!';
-                        player.replyBubbleTimer = 120;
-                        // Convert all existing falling trash on screen into pizza, LIT ENERGY, or Vodka!
-                        for (let obj of fallingObjects) {
-                            if (!['heal_pizza', 'lit_energy', 'vodka', 'cannabis_leaf'].includes(obj.type)) {
-                                const r = Math.random();
-                                obj.type = r < 0.2 ? 'vodka' : (r < 0.55 ? 'lit_energy' : 'heal_pizza');
-                                obj.fromGym = false;
-                                spawnParticles(obj.x, obj.y, '#c084fc', 6);
-                            }
-                        }
+                        player.replyBubbleTimer = 110;
                     }
                 }
             }
 
-            // Player horizontal & vertical physics (with Double Jump support from "Петин подскок")
+            // Player horizontal & vertical physics (with Double Jump, Drift Secret, Masochist & Umat speed buffs)
             const freshJumpPress = keys.jump && !jumpPressedLastFrame;
             jumpPressedLastFrame = keys.jump;
 
             if (player.pinnedByFurry <= 0) {
-                let moveSpeed = 2.85;
+                let speedBonusMult = 1.0;
+                // "Секрет дрифта": +8% movement speed per stack (up to +40%)
+                if (roguelikeState.counts.drift_secret > 0) {
+                    speedBonusMult += Math.min(0.40, roguelikeState.counts.drift_secret * 0.08);
+                }
+                // "Мазохист": +10% movement speed for each empty heart slot
+                if (roguelikeState.counts.masochist > 0) {
+                    const emptyHearts = Math.max(0, player.maxHp - player.hp);
+                    speedBonusMult += emptyHearts * 0.10;
+                }
+                // "Умат": +20% movement speed for 4 seconds after taking damage
+                if (player.umatActiveTimer > 0) {
+                    speedBonusMult += 0.20;
+                }
+
+                let moveSpeed = 2.85 * speedBonusMult;
                 if (player.energyBoostTimer > 0) moveSpeed *= 1.55;
                 if (concreteEvent.spread > 0.25 && !player.inAir) moveSpeed *= 0.58;
 
@@ -3713,50 +4133,74 @@
                 if (b.state === 'sitting' && b.timer <= 0) {
                     b.state = 'flying_away';
                     b.vx = (Math.random() < 0.5 ? -1 : 1) * (1.4 + Math.random());
-                    b.vy = -0.9 - Math.random() * 0.6;
+                    b.vy = -1.2 - Math.random() * 0.8;
                 } else if (b.state === 'flying_away') {
                     b.x += b.vx * worldTimeScale;
                     b.y += b.vy * worldTimeScale;
                     if (b.y < -15 || b.x < -20 || b.x > W + 20) {
                         b.state = 'returning';
                         b.x = Math.random() < 0.5 ? -10 : W + 10;
-                        b.y = 10;
+                        b.y = 5;
                         b.targetX = 70 + Math.random() * 340;
                         b.targetY = 39 + Math.random() * 8;
                     }
                 } else if (b.state === 'returning') {
                     b.x += (b.targetX - b.x) * 0.04 * worldTimeScale;
                     b.y += (b.targetY - b.y) * 0.04 * worldTimeScale;
-                    if (Math.hypot(b.targetX - b.x, b.targetY - b.y) < 3) {
+                    if (Math.abs(b.x - b.targetX) < 3 && Math.abs(b.y - b.targetY) < 3) {
+                        b.x = b.targetX;
+                        b.y = b.targetY;
                         b.state = 'sitting';
-                        b.timer = 5 + Math.random() * 7;
+                        b.timer = 5 + Math.random() * 8;
                     }
                 }
             }
 
-            // Update Enemies (Staged by Score: 0+ Worm, 1000+ Furry & Chubby, 3000+ Gym Bro)
+            // Update Enemies (Staged by Score: 0+ Worm, 1000+ Furry, Chubby & Kostya, 3000+ Gym Bro)
             updateWormEvent(worldDt, tempo);
             updateFurryEvent(worldDt, tempo);
             updateGymEvent(worldDt, tempo);
             updateChubbyBoyEvent(worldDt, tempo);
+            updateKostyaEvent(worldDt, tempo);
 
-            // Sky Trash Spawning (Paused while Gym Bro is throwing weights)
+            // Sky Trash Spawning (Paused while Gym Bro is throwing weights; scales balanced with Tempo up to 300k!)
             if (!gymEvent.active && player.pinnedByFurry <= 0) {
                 spawnTimer -= worldDt;
                 if (spawnTimer <= 0) {
                     spawnSkyTrash();
-                    spawnTimer = 0.52 + Math.random() * 0.42;
+                    // At higher tempo tiers (50k..300k), occasionally drop an extra piece of sky trash on the opposite side
+                    if (tempo >= 1.6 && Math.random() < (tempo - 1.45) * 0.55) {
+                        spawnSkyTrash();
+                    }
+                    const densityScale = 1 + (tempo - 1.0) * 0.65;
+                    spawnTimer = (0.50 + Math.random() * 0.40) / densityScale;
                 }
             }
 
-            // Update Falling Objects & Collisions
+            // Update Falling Objects & Collisions (including "Дьявольский захват" & "Умат" magnetic pull!)
             const hbScale = getHitboxScale();
             const hitW = 13 * hbScale;
             const hitH = 32 * hbScale;
-            const collectW = 15; // Generous pickup radius for bonuses & cannabis leaves
+            const baseCollectW = 15;
 
             for (let i = fallingObjects.length - 1; i >= 0; i--) {
                 const obj = fallingObjects[i];
+                const isBonusItem = ['heal_pizza', 'lit_energy', 'vodka', 'cannabis_leaf'].includes(obj.type);
+
+                // Magnetic attraction for positive items from "Дьявольский захват" and "Умат"
+                const pickupMult = isBonusItem ? getPositivePickupMult(obj.type) : 1.0;
+                if (isBonusItem && pickupMult > 1.0) {
+                    const magnetRadius = 38 * pickupMult;
+                    const dx = player.x - obj.x;
+                    const dy = (player.y - 18) - obj.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < magnetRadius && dist > 1) {
+                        const pullStrength = (1 - dist / magnetRadius) * 2.8 * (pickupMult - 0.7);
+                        obj.x += (dx / dist) * pullStrength * worldTimeScale;
+                        obj.y += (dy / dist) * pullStrength * 0.55 * worldTimeScale;
+                    }
+                }
+
                 obj.x += (obj.vx || 0) * worldTimeScale;
                 obj.y += obj.vy * worldTimeScale;
                 if (obj.gravity) {
@@ -3764,9 +4208,8 @@
                 }
                 obj.rot = (obj.rot || 0) + (obj.vRot || 0.04) * worldTimeScale;
 
-                const isBonusItem = ['heal_pizza', 'lit_energy', 'vodka', 'cannabis_leaf'].includes(obj.type);
-                const effW = isBonusItem ? collectW : hitW;
-                const effH = isBonusItem ? 34 : hitH;
+                const effW = isBonusItem ? baseCollectW * pickupMult : hitW;
+                const effH = isBonusItem ? 34 * Math.min(1.45, pickupMult) : hitH;
 
                 if (
                     Math.abs(obj.x - player.x) < effW &&
@@ -3805,7 +4248,16 @@
                         fallingObjects.splice(i, 1);
                         continue;
                     } else if (player.pinnedByFurry <= 0) {
-                        damagePlayer();
+                        if (obj.type === 'kostya_spit') {
+                            damagePlayer(
+                                'Костя заплевал тебя слюнями из окна!',
+                                'ЗАПЛЁВАН КОСТЕЙ',
+                                '«Костя с огромной лыбой смачно плюнул из окна прямо на тебя...»',
+                                '😁💦'
+                            );
+                        } else {
+                            damagePlayer();
+                        }
                         fallingObjects.splice(i, 1);
                         continue;
                     }
@@ -3813,7 +4265,7 @@
 
                 // Ground impact
                 if (obj.y >= GROUND_Y) {
-                    const pCol = obj.type === 'bottle' ? '#4ade80' : (obj.fromGym ? '#f97316' : '#94a3b8');
+                    const pCol = obj.type === 'bottle' ? '#4ade80' : (obj.type === 'kostya_spit' ? '#7dd3fc' : (obj.fromGym ? '#f97316' : '#94a3b8'));
                     spawnParticles(obj.x, GROUND_Y - 2, pCol, obj.type === 'bottle' ? 10 : 5);
                     fallingObjects.splice(i, 1);
                 }
@@ -4059,7 +4511,7 @@
                         player.replyBubbleTimer = 75;
                     } else if (roguelikeState.counts.kfc_helmet > 0 && player.kfcShieldReady) {
                         player.kfcShieldReady = false;
-                        player.kfcCooldown = 22.0;
+                        player.kfcCooldown = 40.0;
                         player.invulnTimer = 45;
                         flyingKfcHelmet.active = true;
                         flyingKfcHelmet.x = player.x;
@@ -4275,6 +4727,69 @@
             }
         }
 
+        function updateKostyaEvent(worldDt, tempo) {
+            if (!kostyaEvent.active) {
+                // Same rarity/chance as Misha (Chubby Boy), spawns after 1000 points
+                if (score >= 1000 && !isAnyUltActive()) {
+                    kostyaEvent.cooldown -= worldDt * tempo;
+                    if (kostyaEvent.cooldown <= 0 && !gymEvent.active && !windowPeeker.active) {
+                        startKostyaEvent();
+                    }
+                }
+                return;
+            }
+
+            if (kostyaEvent.phase === 'smile_in') {
+                // Slides out with a huge wide grin and stares into the camera for 1 second
+                kostyaEvent.emerge = Math.min(1, kostyaEvent.emerge + worldDt * 4.2);
+                kostyaEvent.timer -= worldDt;
+                if (kostyaEvent.timer <= 0) {
+                    kostyaEvent.phase = 'spitting';
+                    kostyaEvent.timer = 3.2 + Math.random() * 1.5; // 3.2 - 4.7 seconds of rapid spitting
+                    kostyaEvent.spitTimer = 0.08;
+                }
+            } else if (kostyaEvent.phase === 'spitting') {
+                kostyaEvent.timer -= worldDt;
+                kostyaEvent.spitTimer -= worldDt * Math.min(1.4, tempo);
+                if (kostyaEvent.spitTimer <= 0) {
+                    kostyaEvent.spitTimer = 0.22; // Rapid stream of huge saliva globs along one trajectory
+                    const startX = kostyaEvent.winX + 15;
+                    const startY = kostyaEvent.winY + 16;
+                    const flightFrames = 32;
+                    const grav = 0.11;
+                    const vx = (kostyaEvent.targetGroundX - startX) / flightFrames;
+                    const vy = ((GROUND_Y - startY) - 0.5 * grav * flightFrames * flightFrames) / flightFrames;
+
+                    fallingObjects.push({
+                        x: startX,
+                        y: startY,
+                        vx,
+                        vy,
+                        gravity: grav,
+                        rot: 0,
+                        vRot: 0.08,
+                        type: 'kostya_spit',
+                        fromGym: false
+                    });
+                }
+                if (kostyaEvent.timer <= 0) {
+                    kostyaEvent.phase = 'smile_out';
+                    kostyaEvent.timer = 1.0; // Grins at the camera again before sliding back in
+                    kostyaEvent.quote = "Хе-хе, ещё увидимся! 😁";
+                    kostyaEvent.quoteTimer = 55;
+                }
+            } else if (kostyaEvent.phase === 'smile_out') {
+                kostyaEvent.timer -= worldDt;
+                if (kostyaEvent.timer <= 0.45) {
+                    kostyaEvent.emerge = Math.max(0, kostyaEvent.emerge - worldDt * 3.2);
+                }
+                if (kostyaEvent.timer <= 0) {
+                    kostyaEvent.active = false;
+                    kostyaEvent.cooldown = 21 + Math.random() * 10;
+                }
+            }
+        }
+
         // ============================================================================
         // MASTER SCENE RENDERER
         // ============================================================================
@@ -4375,6 +4890,14 @@
                 tripBadge.classList.add('hidden');
             }
 
+            const umatBadge = document.getElementById('umat-hud-badge');
+            if (player.umatActiveTimer > 0) {
+                umatBadge.classList.remove('hidden');
+                document.getElementById('umat-timer-hud').textContent = player.umatActiveTimer.toFixed(1);
+            } else {
+                umatBadge.classList.add('hidden');
+            }
+
             const kfcBadge = document.getElementById('kfc-hud-badge');
             if (roguelikeState.counts.kfc_helmet > 0) {
                 kfcBadge.classList.remove('hidden');
@@ -4409,6 +4932,7 @@
 
             document.getElementById('furry-hud-badge').classList.toggle('hidden', !furryEvent.active);
             document.getElementById('chubby-hud-badge').classList.toggle('hidden', !chubbyEvent.active);
+            document.getElementById('kostya-hud-badge').classList.toggle('hidden', !kostyaEvent.active);
         }
 
         function syncPhoneUI() {
@@ -4553,6 +5077,8 @@
             player.honeyTeaUsed = false;
             player.tripTimer = 45.0;
             player.tripActiveTimer = 0;
+            player.umatCooldown = 0;
+            player.umatActiveTimer = 0;
             player.trail = [];
 
             phoneState.urgent = false;
@@ -4593,9 +5119,14 @@
             chubbyEvent.cooldown = 12.0;
             chubbyEvent.quoteTimer = 0;
 
+            kostyaEvent.active = false;
+            kostyaEvent.cooldown = 14.5;
+            kostyaEvent.quoteTimer = 0;
+
             ultState.nextThreshold = 5000;
             ultState.warningShown = false;
             ultState.warningDisplayTimer = 0;
+            ultState.queuedEnemies = ['worm'];
             document.getElementById('ult-center-banner').classList.add('hidden');
 
             initWireBirds();
